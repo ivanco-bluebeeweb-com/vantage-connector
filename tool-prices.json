@@ -1,0 +1,12 @@
+{
+  "connect_vantage": 0,
+  "disconnect_vantage": 0,
+  "list_connections": 0,
+  "list_entities": 8,
+  "get_entity": 8,
+  "create_cost_report": 16,
+  "create_folder": 16,
+  "create_budget": 16,
+  "get_spend_overview_report": 40,
+  "get_budget_alerts_report": 40
+}
