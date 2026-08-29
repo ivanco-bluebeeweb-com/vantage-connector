@@ -35,3 +35,17 @@ ext = Extension(
 )
 
 chat = ChatExtension(ext)
+
+
+@ext.health_check
+async def health_check(ctx) -> dict:
+    """Report whether a Vantage API-token connection is configured."""
+    raw = await ctx.secrets.get("vantage_connections")
+    return {
+        "healthy": bool(raw),
+        "detail": (
+            "Vantage connection configured."
+            if raw
+            else "Not connected yet — run connect_vantage."
+        ),
+    }
