@@ -1,0 +1,606 @@
+{
+  "manifest_schema_version": 3,
+  "sdk_version": "5.13.0",
+  "app_id": "vantage-connector",
+  "version": "0.1.0",
+  "name": "Vantage",
+  "description": "Connect your own Vantage Cost Management account (bring your own Read/Write-scoped API access token from the Vantage console) to read cost reports, folders, dashboards, resource reports, budgets, and cloud providers, plus value-add spend overview and budget-alert reports. Cost report, folder, and budget creation are supported using Vantage's own VQL query language.",
+  "icon": "icon.svg",
+  "actions_explicit": true,
+  "system": false,
+  "capabilities": [
+    "vantage:read",
+    "vantage:write"
+  ],
+  "tools": [
+    {
+      "name": "connect_vantage",
+      "description": "Connect your own Vantage Cost Management account by saving your API access token (Read or Read/Write scope, from the Vantage console), after checking it actually works.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "create:connection"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "api_token": {
+            "default": "",
+            "description": "Your Vantage API access token (Read or Read/Write scope, from the Vantage console).",
+            "title": "Api Token",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "description": "Optional friendly label for this connection, e.g. 'Acme Inc Vantage'.",
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "title": "ConnectVantageParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "default": "",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "title": "ProviderConnection",
+        "type": "object"
+      },
+      "event": "vantage-connector.connect_vantage",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_vantage-connector_chat"
+    },
+    {
+      "name": "list_connections",
+      "description": "List the connected Vantage accounts.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "description": "Explicit empty params model -- V17 disallows untyped handlers.",
+        "properties": {},
+        "title": "NoParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "ProviderConnection": {
+            "properties": {
+              "id": {
+                "default": "",
+                "title": "Id",
+                "type": "string"
+              },
+              "label": {
+                "default": "",
+                "title": "Label",
+                "type": "string"
+              }
+            },
+            "title": "ProviderConnection",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "connections": {
+            "items": {
+              "$ref": "#/$defs/ProviderConnection"
+            },
+            "title": "Connections",
+            "type": "array"
+          }
+        },
+        "title": "ProviderConnectionList",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_vantage-connector_chat"
+    },
+    {
+      "name": "disconnect_vantage",
+      "description": "Disconnect a Vantage account: deletes the saved API access token. Nothing in Vantage itself is changed.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "delete:connection"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "description": "Which connection to disconnect (see list_connections).",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connection_id"
+        ],
+        "title": "DisconnectVantageParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "deleted": {
+            "default": false,
+            "title": "Deleted",
+            "type": "boolean"
+          },
+          "id": {
+            "default": "",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "title": "DeleteResult",
+        "type": "object"
+      },
+      "event": "vantage-connector.disconnect_vantage",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_vantage-connector_chat"
+    },
+    {
+      "name": "list_entities",
+      "description": "List Vantage records of any resource type (cost_reports, folders, dashboards, resource_reports, budgets, providers, virtual_tag_configs) in the connected Vantage account.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected Vantage account to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "entity": {
+            "description": "Resource type: cost_reports, folders, dashboards, resource_reports, budgets, providers, virtual_tag_configs.",
+            "title": "Entity",
+            "type": "string"
+          },
+          "filter_expr": {
+            "default": "",
+            "description": "Optional query-string filter supported by the resource (e.g. 'folder_token=...').",
+            "title": "Filter Expr",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Maximum records to return.",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entity"
+        ],
+        "title": "ListEntitiesParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "entity": {
+            "default": "",
+            "title": "Entity",
+            "type": "string"
+          },
+          "count": {
+            "default": 0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "records": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Records",
+            "type": "array"
+          }
+        },
+        "title": "EntityList",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_vantage-connector_chat"
+    },
+    {
+      "name": "get_entity",
+      "description": "Read one Vantage record of any resource type in full by its token/id.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected Vantage account to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "entity": {
+            "description": "Resource type, same values as list_entities.",
+            "title": "Entity",
+            "type": "string"
+          },
+          "record_id": {
+            "description": "The record's Vantage token/id.",
+            "title": "Record Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity",
+          "record_id"
+        ],
+        "title": "GetEntityParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "entity": {
+            "default": "",
+            "title": "Entity",
+            "type": "string"
+          },
+          "record": {
+            "additionalProperties": true,
+            "title": "Record",
+            "type": "object"
+          }
+        },
+        "title": "EntityDetail",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_vantage-connector_chat"
+    },
+    {
+      "name": "create_cost_report",
+      "description": "Create a new Vantage cost report from a VQL (Vantage Query Language) filter expression -- e.g. all AWS spend, or spend for a specific team/tag.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "create:resource"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected Vantage account to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "title": {
+            "description": "Name for the new cost report.",
+            "title": "Title",
+            "type": "string"
+          },
+          "filter_vql": {
+            "description": "Vantage Query Language (VQL) filter expression, e.g. 'costs.provider = \\'aws\\''.",
+            "title": "Filter Vql",
+            "type": "string"
+          },
+          "folder_token": {
+            "default": "",
+            "description": "Optional folder token to place this report in.",
+            "title": "Folder Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "filter_vql"
+        ],
+        "title": "CreateCostReportParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "ok": {
+            "default": false,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "record_id": {
+            "default": "",
+            "title": "Record Id",
+            "type": "string"
+          }
+        },
+        "title": "WriteResult",
+        "type": "object"
+      },
+      "event": "vantage-cost-report-created",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_vantage-connector_chat"
+    },
+    {
+      "name": "create_folder",
+      "description": "Create a new Vantage folder -- a container used to organize cost reports and dashboards.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "create:resource"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected Vantage account to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "title": {
+            "description": "Name for the new folder.",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "CreateFolderParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "ok": {
+            "default": false,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "record_id": {
+            "default": "",
+            "title": "Record Id",
+            "type": "string"
+          }
+        },
+        "title": "WriteResult",
+        "type": "object"
+      },
+      "event": "vantage-folder-created",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_vantage-connector_chat"
+    },
+    {
+      "name": "create_budget",
+      "description": "Create a new Vantage budget with a target amount and period, optionally scoped to specific costs via a VQL filter.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "create:resource"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected Vantage account to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name for the new budget.",
+            "title": "Name",
+            "type": "string"
+          },
+          "amount": {
+            "description": "Budget amount (in the report's currency).",
+            "title": "Amount",
+            "type": "number"
+          },
+          "period_type": {
+            "default": "monthly",
+            "description": "Budget period: monthly, quarterly, or yearly.",
+            "title": "Period Type",
+            "type": "string"
+          },
+          "filter_vql": {
+            "default": "",
+            "description": "Optional VQL filter to scope the budget to specific costs.",
+            "title": "Filter Vql",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "amount"
+        ],
+        "title": "CreateBudgetParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "ok": {
+            "default": false,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "record_id": {
+            "default": "",
+            "title": "Record Id",
+            "type": "string"
+          }
+        },
+        "title": "WriteResult",
+        "type": "object"
+      },
+      "event": "vantage-budget-created",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_vantage-connector_chat"
+    },
+    {
+      "name": "get_spend_overview_report",
+      "description": "Value-add report: summarize recent Vantage cost reports by cloud provider -- total spend per provider.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected Vantage account to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Number of recent cost reports to scan for the overview.",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "title": "GetSpendOverviewParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "report_count": {
+            "default": 0,
+            "title": "Report Count",
+            "type": "integer"
+          },
+          "by_provider": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "By Provider",
+            "type": "object"
+          }
+        },
+        "title": "SpendOverviewReport",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_vantage-connector_chat"
+    },
+    {
+      "name": "get_budget_alerts_report",
+      "description": "Value-add report: scan Vantage budgets and flag every one that is currently over its target amount.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected Vantage account to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Number of budgets to scan.",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "title": "GetBudgetAlertsReportParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "budget_count": {
+            "default": 0,
+            "title": "Budget Count",
+            "type": "integer"
+          },
+          "over_budget": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Over Budget",
+            "type": "array"
+          }
+        },
+        "title": "BudgetAlertsReport",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_vantage-connector_chat"
+    }
+  ],
+  "signals": [],
+  "schedules": [],
+  "required_scopes": [],
+  "icon_size_bytes": 677,
+  "panels": [
+    {
+      "panel_id": "vantage_connect",
+      "slot": "left",
+      "title": "Vantage",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "vantage_connect_help",
+      "slot": "overlay",
+      "title": "How do I set this up?",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "vantage_settings",
+      "slot": "center",
+      "title": "",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    }
+  ]
+}
