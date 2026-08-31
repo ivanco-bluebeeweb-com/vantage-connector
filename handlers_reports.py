@@ -38,7 +38,7 @@ async def get_spend_overview_report(ctx, params: GetSpendOverviewParams) -> Acti
     return ActionResult.success(SpendOverviewReport(
         report_count=len(rows),
         by_provider={k: round(v, 2) for k, v in by_provider.items()},
-    )), summary="Spend overview report retrieved."
+    ), summary="Spend overview report retrieved.")
 
 
 @chat.function(
@@ -64,4 +64,4 @@ async def get_budget_alerts_report(ctx, params: GetBudgetAlertsReportParams) -> 
                 "amount": amount,
                 "actual_amount": actual,
             })
-    return ActionResult.success(BudgetAlertsReport(budget_count=len(rows), over_budget=over_budget)), summary="Budget alerts report retrieved."
+    return ActionResult.success(BudgetAlertsReport(budget_count=len(rows), over_budget=over_budget), summary="Budget alerts report retrieved.")

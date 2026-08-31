@@ -86,7 +86,7 @@ async def connect_vantage(ctx, params: ConnectVantageParams) -> ActionResult:
         "api_token": params.api_token,
     })
     await _save_connections(ctx, connections)
-    return ActionResult.success(ProviderConnection(id=conn_id, label=params.label or "Vantage")), summary="Vantage connected."
+    return ActionResult.success(ProviderConnection(id=conn_id, label=params.label or "Vantage"), summary="Vantage connected.")
 
 
 @chat.function(
@@ -99,7 +99,7 @@ async def list_connections(ctx, params: NoParams) -> ActionResult:
     connections = await _load_connections(ctx)
     return ActionResult.success(ProviderConnectionList(
         connections=[ProviderConnection(id=c["id"], label=c.get("label", "Vantage")) for c in connections]
-    )), summary="Connections listed."
+    ), summary="Connections listed.")
 
 
 @chat.function(
@@ -115,4 +115,4 @@ async def disconnect_vantage(ctx, params: DisconnectVantageParams) -> ActionResu
     if len(remaining) == len(connections):
         return ActionResult.error("Connection not found.", code="VANTAGE_NOT_CONNECTED")
     await _save_connections(ctx, remaining)
-    return ActionResult.success(DeleteResult(deleted=True, id=params.connection_id)), summary="Vantage disconnected."
+    return ActionResult.success(DeleteResult(deleted=True, id=params.connection_id), summary="Vantage disconnected.")
