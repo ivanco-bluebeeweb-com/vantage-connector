@@ -44,7 +44,7 @@ async def list_entities(ctx, params: ListEntitiesParams) -> ActionResult:
                 query[k] = v
     data = await vc.request(ctx, conn, "GET", vc.entity_path(params.entity), params=query, action=f"list {params.entity}")
     records = data.get(params.entity, data.get("items", [])) if isinstance(data, dict) else (data if isinstance(data, list) else [])
-    return ActionResult.ok(EntityList(entity=params.entity, count=len(records), records=records))
+    return ActionResult.success(EntityList(entity=params.entity, count=len(records), records=records)), summary="Entities listed."
 
 
 @chat.function(
@@ -63,7 +63,7 @@ async def get_entity(ctx, params: GetEntityParams) -> ActionResult:
             code="VANTAGE_VALIDATION_FAILED",
         )
     data = await vc.request(ctx, conn, "GET", vc.entity_path(params.entity, params.record_id), action=f"get {params.entity}")
-    return ActionResult.ok(EntityDetail(entity=params.entity, record=data if isinstance(data, dict) else {}))
+    return ActionResult.success(EntityDetail(entity=params.entity, record=data if isinstance(data, dict) else {})), summary="Entity retrieved."
 
 
 @chat.function(
@@ -82,7 +82,7 @@ async def create_cost_report(ctx, params: CreateCostReportParams) -> ActionResul
     if params.folder_token:
         payload["folder_token"] = params.folder_token
     data = await vc.request(ctx, conn, "POST", "/cost_reports", json_body=payload, action="create cost report")
-    return ActionResult.ok(WriteResult(ok=True, record_id=(data or {}).get("token", "")))
+    return ActionResult.success(WriteResult(ok=True, record_id=(data or {}).get("token", ""))), summary="Cost report created."
 
 
 @chat.function(
@@ -97,7 +97,7 @@ async def create_folder(ctx, params: CreateFolderParams) -> ActionResult:
     if not conn:
         return err
     data = await vc.request(ctx, conn, "POST", "/folders", json_body={"title": params.title}, action="create folder")
-    return ActionResult.ok(WriteResult(ok=True, record_id=(data or {}).get("token", "")))
+    return ActionResult.success(WriteResult(ok=True, record_id=(data or {}).get("token", ""))), summary="Folder created."
 
 
 @chat.function(
@@ -116,4 +116,4 @@ async def create_budget(ctx, params: CreateBudgetParams) -> ActionResult:
     if params.filter_vql:
         payload["filter"] = params.filter_vql
     data = await vc.request(ctx, conn, "POST", "/budgets", json_body=payload, action="create budget")
-    return ActionResult.ok(WriteResult(ok=True, record_id=(data or {}).get("token", "")))
+    return ActionResult.success(WriteResult(ok=True, record_id=(data or {}).get("token", ""))), summary="Budget created."
