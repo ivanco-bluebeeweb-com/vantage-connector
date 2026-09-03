@@ -617,5 +617,28 @@
       "max_bytes": 16384,
       "scope": "user"
     }
-  ]
+  ],
+  "pricing": {
+    "model": "per_action",
+    "currency": "credits",
+    "monthly_price": 0,
+    "free_tools": [
+      "connect_vantage",
+      "list_connections",
+      "disconnect_vantage"
+    ],
+    "tool_prices": {
+      "connect_vantage": 0,
+      "list_connections": 0,
+      "disconnect_vantage": 0,
+      "list_entities": 8,
+      "get_entity": 8,
+      "create_cost_report": 16,
+      "create_folder": 16,
+      "create_budget": 16,
+      "get_spend_overview_report": 8,
+      "get_budget_alerts_report": 8
+    },
+    "notes": "Standard platform scale {0, 8, 16, 20, 40}. 0 = access setup and harmless discovery. 8 = read/list/search. 16 = standard single mutation/CRUD. 20 = bulk or heavy audit operation."
+  }
 }
